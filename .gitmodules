@@ -1,0 +1,9 @@
+[submodule "lib/SaiotDevice"]
+	path = lib/SaiotDevice
+	url = https://github.com/daniellycosta/SaiotDevice.git
+[submodule "lib/WiFiManager"]
+	path = lib/WiFiManager
+	url = https://github.com/ricavalcanti/WiFiManager.git
+[submodule "lib/pubsubclient"]
+	path = lib/pubsubclient
+	url = https://github.com/ricavalcanti/pubsubclient.git
