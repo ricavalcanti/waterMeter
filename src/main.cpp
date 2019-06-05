@@ -12,16 +12,18 @@
 
 #include <Arduino.h>
 #include <SaIoTDeviceLib.h>
-#define timeToSend 15
+#define timeToSend 30
+#define timeToCollectdata 15
 
 WiFiClient espClient;
-SaIoTDeviceLib hidrometro("DeviceTeste", "1658881hbc", "ricardodev@email.com"); //name,serial,email
-SaIoTController solenoide("on/off", "v.Solenoide", "onoff");                    //key,tag,class
-SaIoTSensor medidorAgua("hd01", "hidrometro_01", "Litros", "number");           //key,tag,unit,type
+SaIoTDeviceLib hidrometro("DeviceTeste", "0506198LAB", "ricardo@email.com"); //name,serial,email
+SaIoTController solenoide("on/off", "v.Solenoide", "onoff");                 //key,tag,class
+SaIoTSensor medidorAgua("hd01", "hidrometro_01", "Litros", "number");        //key,tag,unit,type
 String senha = "12345678910";
 void callback(char *topic, byte *payload, unsigned int length);
 
-unsigned long tDecorrido;
+unsigned long tDecorridoCollect;
+unsigned long tDecorridoSend;
 String getHoraAtual();
 void setup()
 {
@@ -32,15 +34,25 @@ void setup()
   hidrometro.preSetCom(espClient, callback, 300);
   hidrometro.start(senha);
 
-  tDecorrido = millis();
+  tDecorridoCollect = millis();
+  tDecorridoSend = millis();
 }
 
 void loop()
 {
-  if (((millis() - tDecorrido) / 1000) >= timeToSend)
+  if (((millis() - tDecorridoCollect) / 1000) >= timeToCollectdata)
   {
-    medidorAgua.sendData(random(1, 30), SaIoTCom::getDateNow());
-    tDecorrido = millis();
+    // medidorAgua.sendData(random(1, 30), SaIoTCom::getDateNow());
+    medidorAgua.pushOnQueue(random(1, 30), SaIoTCom::getDateNow());
+    tDecorridoCollect = millis();
+    Serial.println("Na fila!");
+  }
+  if (((millis() - tDecorridoSend) / 1000) >= timeToSend)
+  {
+    medidorAgua.sendData(2);
+    // medidorAgua.pushOnQueue(random(1, 30), SaIoTCom::getDateNow());
+    tDecorridoSend = millis();
+    Serial.println("Enviar...");
   }
   hidrometro.handleLoop();
 }
