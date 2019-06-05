@@ -12,6 +12,7 @@
 
 #include <Arduino.h>
 #include <SaIoTDeviceLib.h>
+#include <Ticker.h>
 #define timeToSend 30
 #define timeToCollectdata 15
 
@@ -25,6 +26,15 @@ void callback(char *topic, byte *payload, unsigned int length);
 unsigned long tDecorridoCollect;
 unsigned long tDecorridoSend;
 String getHoraAtual();
+
+Ticker colData;
+
+void ICACHE_RAM_ATTR collectData2queue()
+{
+  medidorAgua.pushOnQueue(random(1, 30), SaIoTCom::getDateNow());
+  tDecorridoCollect = millis();
+  Serial.println("Na fila!");
+}
 void setup()
 {
   hidrometro.addController(solenoide);
@@ -32,6 +42,7 @@ void setup()
   Serial.begin(115200);
   Serial.println("INICIO");
   hidrometro.preSetCom(espClient, callback, 300);
+  colData.attach(timeToCollectdata, collectData2queue);
   hidrometro.start(senha);
 
   tDecorridoCollect = millis();
@@ -40,13 +51,13 @@ void setup()
 
 void loop()
 {
-  if (((millis() - tDecorridoCollect) / 1000) >= timeToCollectdata)
-  {
-    // medidorAgua.sendData(random(1, 30), SaIoTCom::getDateNow());
-    medidorAgua.pushOnQueue(random(1, 30), SaIoTCom::getDateNow());
-    tDecorridoCollect = millis();
-    Serial.println("Na fila!");
-  }
+  // if (((millis() - tDecorridoCollect) / 1000) >= timeToCollectdata)
+  // {
+  //   // medidorAgua.sendData(random(1, 30), SaIoTCom::getDateNow());
+  //   medidorAgua.pushOnQueue(random(1, 30), SaIoTCom::getDateNow());
+  //   tDecorridoCollect = millis();
+  //   Serial.println("Na fila!");
+  // }
   if (((millis() - tDecorridoSend) / 1000) >= timeToSend)
   {
     medidorAgua.sendData(2);
